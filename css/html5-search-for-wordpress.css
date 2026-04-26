@@ -1,0 +1,12 @@
+/**
+ * CSS file to hide the WordPress.com smiley stat
+ *
+ * Version: 15.01
+ *
+ */
+
+
+.thisismyurl-assistive-text {
+    clip: rect(1px, 1px, 1px, 1px);
+    position: absolute !important;
+}
