@@ -8,24 +8,35 @@ Stable tag: 16.0.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Ensures HTML5 search-form markup is enabled for any active theme that has not declared HTML5 theme support.
+Adds HTML5 search-form support to any active theme that never opted in, using the WordPress-native `add_theme_support()` mechanism.
 
 == Description ==
 
-WordPress has emitted HTML5 search-form markup since version 3.6 (2013), but only when the active theme calls `add_theme_support( 'html5', [ 'search-form' ] )`. Modern block themes do this by default. Many older classic themes — and some themes still in production today — never opted in, and continue to emit non-HTML5 search markup.
+I first published this plugin in 2009. The original version filtered `get_search_form` and returned hard-coded HTML5 markup, with `get_search_query()` injected into the input value without escaping. Search forms reflect their own input back, so the realistic risk was low — but it was still wrong, and it had been wrong since 2014. I should have caught it then. The 16.0.0 rewrite throws that approach out entirely.
 
-This plugin closes that gap. It hooks `after_setup_theme` at priority 999 (so the theme has the first say) and adds `search-form` to the active theme's HTML5 support list. The result: `get_search_form()` produces a valid HTML5 search form on any theme, without you having to edit `functions.php`.
+Here is the right answer. WordPress has emitted HTML5 search-form markup since version 3.6 (2013), but only when the active theme calls `add_theme_support( 'html5', [ 'search-form' ] )`. Modern block themes do this by default. Plenty of older classic themes — and a surprising number of themes still in production today — never opted in, and continue to emit pre-HTML5 search markup.
+
+This plugin closes that gap with one line. It hooks `after_setup_theme` at priority 999 so the theme has the first say, then declares `search-form` HTML5 support on the theme's behalf. `get_search_form()` produces valid HTML5 markup. Themes always win. The plugin only fills the gap.
 
 What it does:
 
-* Adds `search-form` to the theme's `html5` support list on every page load.
-* Idempotent — if the theme has already declared HTML5 search-form support, this plugin is a harmless no-op.
+* Calls `add_theme_support( 'html5', [ 'search-form' ] )` on `after_setup_theme` at priority 999.
+* Idempotent. If the theme has already declared HTML5 search-form support, the plugin is a harmless no-op.
 * Single-file plugin. No settings, no admin UI, no enqueued assets, no markup overrides.
 
 What it does **not** do:
 
-* It does not override custom `searchform.php` template files. If your theme provides one, that template wins.
-* It does not modify comment forms, galleries, or other HTML5 surfaces. Scope is intentionally limited to the search form to match the plugin's stated purpose.
+* It does not override custom `searchform.php` template files. If your theme provides one, that template wins. Always.
+* It does not modify comment forms, galleries, scripts, or styles. Scope is intentionally limited to the search form to match the plugin's stated purpose.
+* It does not replace, filter, or wrap the search form output. The theme owns the markup.
+
+Small, single-purpose plugin. No settings page, no admin chrome, no tracking. Activate it and it works. Deactivate it and it leaves no trace.
+
+Originally published 2009, rewritten 2026 to use the WordPress-native `add_theme_support()` mechanism.
+
+= About the author =
+
+Built and maintained by Christopher Ross — 25 years working with WordPress, currently running a senior-dev consulting practice at This Is My URL. More plugins, writing, and case studies at [thisismyurl.com](https://thisismyurl.com/).
 
 == Installation ==
 
@@ -35,24 +46,28 @@ What it does **not** do:
 
 == Frequently Asked Questions ==
 
-= How do I know if my theme already supports HTML5 search forms? =
+= How do I tell if my theme already declares HTML5 support? =
 
-In your active theme's `functions.php`, look for `add_theme_support( 'html5', ... )` with `'search-form'` in the array. If it's there, your theme already supports HTML5 search forms and this plugin will simply be a no-op. If it isn't, this plugin layers it in for you.
+Open your active theme's `functions.php` and search for `add_theme_support( 'html5', ... )`. If `search-form` is in that array, your theme is already covered and this plugin will be a no-op. If it isn't, the plugin layers it in for you. You can also check at runtime with `current_theme_supports( 'html5', 'search-form' )`.
+
+= Will this conflict with my theme's `searchform.php`? =
+
+No. WordPress always prefers a custom `searchform.php` template over its built-in search form generator. This plugin only changes the markup that `get_search_form()` produces when no template file is present. If your theme ships a `searchform.php`, that template runs unchanged.
 
 = Does this work with block themes? =
 
-Block themes (Twenty Twenty-Two and later) declare full HTML5 theme support by default, so this plugin is a no-op on them. It exists primarily for older classic themes that never opted in.
+Block themes (Twenty Twenty-Two and later) declare full HTML5 theme support by default, so on a block theme this plugin is a no-op. It exists for older classic themes that never opted in, and for the small number of recent classic themes that still skip the declaration.
 
-= My theme provides a `searchform.php` file. Will this plugin override it? =
+= Why limit the plugin to `search-form` instead of declaring all HTML5 features? =
 
-No. WordPress prefers custom `searchform.php` templates over its built-in search form generator. This plugin only affects themes that rely on `get_search_form()` to generate the markup.
+Because the plugin is named "HTML5 Search." Scope discipline matters. If I added comment-form, gallery, caption, and script-style support behind the same activation, the plugin would be doing things the user didn't ask for. One concern, one declaration.
 
 == Changelog ==
 
 = 16.0.0 =
 * Full rewrite from scratch for 2026.
 * Replaced the old `get_search_form` filter override with a clean `add_theme_support( 'html5', [ 'search-form' ] )` call. Themes win by default; the plugin only fills the gap for themes that haven't opted in.
-* Fixed unescaped `get_search_query()` value previously injected into the form's `value` attribute.
+* Fixed an unescaped `get_search_query()` value previously injected into the form's input. Low realistic risk because search forms self-reflect, but still wrong, and present since 2014.
 * Modern PHP (`declare(strict_types=1)`, namespaces, `Requires PHP: 7.4`).
 * Removed the bundled "common framework," donate prompt, and admin settings page.
 * Single-file plugin, WPCS-clean.
@@ -67,4 +82,4 @@ No. WordPress prefers custom `searchform.php` templates over its built-in search
 == Upgrade Notice ==
 
 = 16.0.0 =
-Full rewrite. The plugin now uses `add_theme_support()` rather than a custom `get_search_form` filter, deferring to your theme by default. Custom `searchform.php` templates and theme-declared HTML5 support are now respected. No settings or admin UI.
+Full rewrite. Replaced the `get_search_form` filter override with `add_theme_support( 'html5', [ 'search-form' ] )` so themes always win. Custom `searchform.php` templates are respected. Fixes a long-standing unescaped `get_search_query()` value in the prior filter. No settings or admin UI.
