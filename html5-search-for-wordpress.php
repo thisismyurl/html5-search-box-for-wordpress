@@ -1,99 +1,55 @@
 <?php
-/*
-Plugin Name: HTML5 Search for WordPress
-Plugin URI: http://thisismyurl.com/downloads/html5-search-for-wordpress/
-Description: Replaces the built in WordPress search form with an HTML5 search form complete with auto lookup.
-Author: Christopher Ross
-Author URI: http://thisismyurl.com/
-Version: 15.01
-*/
-
-
 /**
- * HTML5 Search for WordPress core file
+ * Plugin Name:       HTML5 Search for WordPress
+ * Plugin URI:        https://thisismyurl.com/plugins/html5-search-for-wordpress/
+ * Description:       Ensures HTML5 search-form markup is enabled for any active theme that has not declared HTML5 theme support.
+ * Version:           16.0.0
+ * Requires at least: 6.4
+ * Requires PHP:      7.4
+ * Author:            Christopher Ross
+ * Author URI:        https://thisismyurl.com/
+ * License:           GPL-2.0-or-later
+ * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
+ * Text Domain:       html5-search-box-for-wordpress
  *
- * This file contains all the logic required for the plugin
- *
- * @link		http://wordpress.org/extend/plugins/html5-search-for-wordpress/
- *
- * @package 	HTML5 Search for WordPress
- * @copyright	Copyright (c) 2008, Chrsitopher Ross
- * @license		http://www.gnu.org/licenses/old-licenses/gpl-2.0.html GNU General Public License, v2 (or newer)
- *
- * @since 		HTML5 Search for WordPress 1.0
+ * @package ThisIsMyURL\HTML5Search
  */
 
+declare( strict_types = 1 );
 
-/* if the plugin is called directly, die */
-if ( ! defined( 'WPINC' ) )
-	die;
-	
-	
-define( 'THISISMYURL_HTML5_NAME', 'HTML5 Search for WordPress' );
-define( 'THISISMYURL_HTML5_SHORTNAME', 'HTML5 Search' );
+namespace ThisIsMyURL\HTML5Search;
 
-define( 'THISISMYURL_HTML5_FILENAME', plugin_basename( __FILE__ ) );
-define( 'THISISMYURL_HTML5_FILEPATH', dirname( plugin_basename( __FILE__ ) ) );
-define( 'THISISMYURL_HTML5_FILEPATHURL', plugin_dir_url( __FILE__ ) );
+defined( 'ABSPATH' ) || exit;
 
-define( 'THISISMYURL_HTML5_NAMESPACE', basename( THISISMYURL_HTML5_FILENAME, '.php' ) );
-define( 'THISISMYURL_HTML5_TEXTDOMAIN', str_replace( '-', '_', THISISMYURL_HTML5_NAMESPACE ) );
-
-define( 'THISISMYURL_HTML5_VERSION', '15.01' );
-
-include_once( 'thisismyurl-common.php' );
-
-
+const VERSION = '16.0.0';
 
 /**
- * Creates the class required for HTML5 Search for WordPress
+ * Ensure HTML5 search-form theme support on every page load.
  *
- * @author     Christopher Ross <info@thisismyurl.com>
- * @version    Release: @15.01@
- * @see        wp_enqueue_scripts()
- * @since      Class available since Release 15.01
+ * Since WordPress 3.6, themes opt in to HTML5 markup for `search-form`,
+ * `comment-form`, and other surfaces via `add_theme_support( 'html5', [...] )`.
+ * Modern block themes declare this; many older classic themes do not, and
+ * they emit XHTML markup that is non-compliant under HTML5.
  *
+ * Hooking on `after_setup_theme` at priority 999 lets the theme declare
+ * its own support first; if the theme has already opted in, our call is
+ * an additive no-op. If it hasn't, we layer `search-form` support on top
+ * so `get_search_form()` produces a valid HTML5 form.
  */
-if( ! class_exists( 'thissimyurl_HTML5SearchforWordPress' ) ) {
-class thissimyurl_HTML5SearchforWordPress extends thisismyurl_Common_HTML5 {
-
-	/**
-	  * Standard Constructor
-	  *
-	  * @access public
-	  * @static
-	  * @uses http://codex.wordpress.org/Function_Reference/add_action
-	  * @since Method available since Release 15.01
-	  *
-	  */
-	public function run() {
-		add_filter( 'get_search_form', array( $this, 'html5_search_form' ) );
-	}
-	
-	
-	/**
-	  * html5_search_form
-	  *
-	  * @access public
-	  * @static
-	  * @since Method available since Release 15.01
-	  *
-	  */
-	function html5_search_form( $form ) {
-
-		$form = '<form role="search" method="get" id="searchform" action="' . home_url( '/' ) . '" >
-				<label class="thisismyurl-assistive-text" for="s">' . __( 'Search for:', THISISMYURL_HTML5_TEXTDOMAIN ) . '</label>
-				<input type="search" placeholder="' . __( 'Enter term &hellip;', THISISMYURL_HTML5_TEXTDOMAIN ) . '" value="' . get_search_query() . '" name="s" id="s" />
-				<input type="submit" id="searchsubmit" value="' . __( 'Search', THISISMYURL_HTML5_TEXTDOMAIN ) . '" />
-				</form>';
-	
-		return $form;
-
-	}
-	
-}
+function bootstrap(): void {
+	add_action( 'after_setup_theme', __NAMESPACE__ . '\\ensure_html5_search_support', 999 );
 }
 
-$thissimyurl_HTML5SearchforWordPress = new thissimyurl_HTML5SearchforWordPress;
+/**
+ * Add `search-form` to the active theme's HTML5 support list.
+ *
+ * `add_theme_support()` is idempotent — calling it for an already-supported
+ * feature is harmless. We deliberately scope to `search-form` only to honor
+ * the plugin's stated purpose; users who want broader HTML5 support
+ * (`comment-form`, `gallery`, etc.) should declare it in their theme.
+ */
+function ensure_html5_search_support(): void {
+	add_theme_support( 'html5', [ 'search-form' ] );
+}
 
-$thissimyurl_HTML5SearchforWordPress->run();
+bootstrap();
