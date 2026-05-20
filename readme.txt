@@ -12,6 +12,8 @@ Adds HTML5 search-form support to any active theme that never opted in, using th
 
 == Description ==
 
+ARCHIVED: This plugin is no longer actively maintained. It is provided as-is for legacy installs, and active support/testing is not guaranteed.
+
 I first published this plugin in 2009. The original version filtered `get_search_form` and returned hard-coded HTML5 markup, with `get_search_query()` injected into the input value without escaping. Search forms reflect their own input back, so the realistic risk was low — but it was still wrong, and it had been wrong since 2014. I should have caught it then. The 16.0.0 rewrite throws that approach out entirely.
 
 Here is the right answer. WordPress has emitted HTML5 search-form markup since version 3.6 (2013), but only when the active theme calls `add_theme_support( 'html5', [ 'search-form' ] )`. Modern block themes do this by default. Plenty of older classic themes — and a surprising number of themes still in production today — never opted in, and continue to emit pre-HTML5 search markup.
