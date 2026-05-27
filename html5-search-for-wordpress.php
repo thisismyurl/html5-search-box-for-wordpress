@@ -3,7 +3,7 @@
  * Plugin Name:       HTML5 Search for WordPress
  * Plugin URI:        https://thisismyurl.com/plugins/html5-search-for-wordpress/
  * Description:       Ensures HTML5 search-form markup is enabled for any active theme that has not declared HTML5 theme support.
- * Version:           16.0.0
+ * Version:           16.6147
  * Requires at least: 6.4
  * Requires PHP:      7.4
  * Author:            Christopher Ross
@@ -21,7 +21,7 @@ namespace ThisIsMyURL\HTML5Search;
 
 defined( 'ABSPATH' ) || exit;
 
-const VERSION = '16.0.0';
+const VERSION = '16.6147';
 
 /**
  * Ensure HTML5 search-form theme support on every page load.

@@ -2,9 +2,9 @@
 Contributors: thisismyurl
 Tags: html5, search, search-form, theme-support, markup
 Requires at least: 6.4
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.4
-Stable tag: 16.0.0
+Stable tag: 16.6147
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,6 @@ Adds HTML5 search-form support to any active theme that never opted in, using th
 
 == Description ==
 
-ARCHIVED: This plugin is no longer actively maintained. It is provided as-is for legacy installs, and active support/testing is not guaranteed.
 
 I first published this plugin in 2009. The original version filtered `get_search_form` and returned hard-coded HTML5 markup, with `get_search_query()` injected into the input value without escaping. Search forms reflect their own input back, so the realistic risk was low — but it was still wrong, and it had been wrong since 2014. I should have caught it then. The 16.0.0 rewrite throws that approach out entirely.
 
@@ -65,6 +64,11 @@ Block themes (Twenty Twenty-Two and later) declare full HTML5 theme support by d
 Because the plugin is named "HTML5 Search." Scope discipline matters. If I added comment-form, gallery, caption, and script-style support behind the same activation, the plugin would be doing things the user didn't ask for. One concern, one declaration.
 
 == Changelog ==
+
+= 16.6147 =
+* Unified plugin versioning to the x.Yddd calendar-version scheme.
+* Confirmed compatibility with WordPress 7.0.
+
 
 = 16.0.0 =
 * Full rewrite from scratch for 2026.
